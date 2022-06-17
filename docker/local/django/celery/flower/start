@@ -1,0 +1,21 @@
+#!/bin/bash
+
+set -o errexit
+set -o pipefail
+set -o nounset
+
+worker_ready(){
+    celery -A authors_api inspect ping
+}
+
+
+until worker_ready; do
+    >&2 echo "Celery worker is not ready yet - sleeping"
+    sleep 1
+done
+>&2 echo "Celery worker is ready!!!!!"
+
+celery -A authors_api \
+    --broker="${CELERY_BROKER}" \
+    flower
+    --basic-auth=${CELERY_FLOWER_USER}:${CELERY_FLOWER_PASSWORD}

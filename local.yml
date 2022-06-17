@@ -23,6 +23,7 @@ services:
     depends_on:
       - postgres
       - mailhog
+      - redis
     networks:
      - authors-api-live
 
@@ -45,7 +46,52 @@ services:
     image: mailhog/mailhog:v1.0.0
     container_name: mailhog
     ports:
-      - 8025:8025
+      - 1025:8025
+    networks:
+      - authors-api-live
+
+  redis:
+    image: redis:6-alpine
+    container_name: redis-authors
+    ports:
+      - 6379:6379
+    networks:
+      - authors-api-live
+
+  celery_worker:
+    build:
+      context: .
+      dockerfile: ./docker/local/django/Dockerfile
+    command: /start-celeryworker
+    container_name: celery-worker
+    volumes:
+      - .:/app
+    env_file:
+      - ./.envs/.local/.django
+      - ./.envs/.local/.postgres
+    depends_on:
+      - postgres
+      - mailhog
+      - redis
+    networks:
+      - authors-api-live
+
+  flower:
+    build:
+      context: .
+      dockerfile: ./docker/local/django/Dockerfile
+    command: /start-flower
+    container_name: flower
+    volumes:
+      - .:/app
+    env_file:
+      - ./.envs/.local/.django
+      - ./.envs/.local/.postgres
+    ports:
+      - 5555:5555
+    depends_on:
+      - postgres
+      - redis
     networks:
       - authors-api-live
 
