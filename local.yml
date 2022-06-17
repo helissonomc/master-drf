@@ -46,7 +46,7 @@ services:
     image: mailhog/mailhog:v1.0.0
     container_name: mailhog
     ports:
-      - 1025:1025
+      - 8025:8025
     networks:
       - authors-api-live
 
